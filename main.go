@@ -28,7 +28,8 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 	envVal := os.Getenv("LINKO_LOG_FILE")
 	multiLogger, err := initializeLogger(envVal)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return 1
 	}
 
 	st, err := store.New(dataDir, multiLogger)
