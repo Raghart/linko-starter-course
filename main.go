@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,7 +26,10 @@ func main() {
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
 	envVal := os.Getenv("LINKO_LOG_FILE")
-	multiLogger := initializeLogger(envVal)
+	multiLogger, err := initializeLogger(envVal)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	st, err := store.New(dataDir, multiLogger)
 	if err != nil {

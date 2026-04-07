@@ -1,20 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
 )
 
-func initializeLogger(logFile string) *log.Logger {
+func initializeLogger(logFile string) (*log.Logger, error) {
 	if logFile != "" {
 		file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 		if err != nil {
-			log.Fatalf("error while trying to initiliaze a logger:", err)
+			return nil, fmt.Errorf("error while trying to initiliaze a logger:", err)
 		}
 
 		multiWriter := io.MultiWriter(os.Stderr, file)
-		return log.New(multiWriter, "", log.LstdFlags)
+		return log.New(multiWriter, "", log.LstdFlags), nil
 	}
-	return log.New(os.Stderr, "", log.LstdFlags)
+	return log.New(os.Stderr, "", log.LstdFlags), nil
 }
