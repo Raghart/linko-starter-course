@@ -26,12 +26,17 @@ func main() {
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
 	envVal := os.Getenv("LINKO_LOG_FILE")
-	multiLogger, err := initializeLogger(envVal)
+	multiLogger, closeFunc, err := initializeLogger(envVal)
 	if err != nil {
 		log.Print(err)
 		return 1
 	}
 
+	defer func() {
+		if err := closeFunc(); err != nil {
+			log.Printf("There was a problem while trying to flush the helper: %v", err)
+		}
+	}()
 	st, err := store.New(dataDir, multiLogger)
 	if err != nil {
 		multiLogger.Printf("failed to create store: %v\n", err)
