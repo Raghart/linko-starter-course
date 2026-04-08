@@ -10,12 +10,6 @@ import (
 
 type closeFunc func() error
 
-func closeHelper(function func() error) {
-	if err := function(); err != nil {
-		log.Printf("There was a problem while trying to flush the helper: %v", err)
-	}
-}
-
 func initializeLogger(logFile string) (*log.Logger, closeFunc, error) {
 	if logFile != "" {
 		file, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)

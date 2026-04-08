@@ -37,6 +37,7 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 			log.Printf("There was a problem while trying to flush the helper: %v", err)
 		}
 	}()
+
 	st, err := store.New(dataDir, multiLogger)
 	if err != nil {
 		multiLogger.Printf("failed to create store: %v\n", err)
