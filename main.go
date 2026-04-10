@@ -49,7 +49,9 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 
 	st, err := store.New(dataDir, logger)
 	if err != nil {
-		logger.Error("ERROR", fmt.Sprintf("failed to create store: %v\n", err))
+		logger.Error("failed to create store",
+			slog.String("error", fmt.Sprint(err)),
+		)
 		return 1
 	}
 	s := newServer(*st, httpPort, cancel, logger)
