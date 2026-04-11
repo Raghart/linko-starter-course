@@ -100,7 +100,7 @@ func (s *server) handlerListURLs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.logger.Error(
 			"failed to list URLs",
-			slog.String("error", fmt.Sprint(err)),
+			"error", err,
 		)
 		http.Error(w, "failed to list URLs", http.StatusInternalServerError)
 		return
