@@ -35,6 +35,11 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 				methodSlogSlice = append(methodSlogSlice, slog.String("user", logCtx.Username))
 			}
 
+			if err, ok := logCtx.Error.(error); ok {
+				methodSlogSlice = append(methodSlogSlice, slog.GroupAttrs("error",
+					errorAttrs(err)...))
+			}
+
 			logger.Info("Served request",
 				methodSlogSlice...,
 			)
