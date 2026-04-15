@@ -30,14 +30,10 @@ func main() {
 }
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
-	isNoColor := true
-	if isatty.IsCygwinTerminal(os.Stderr.Fd()) || isatty.IsTerminal(os.Stderr.Fd()) {
-		isNoColor = false
-	}
 	debugHandler := tint.NewHandler(os.Stderr, &tint.Options{
 		Level:       slog.LevelDebug,
 		ReplaceAttr: replaceAttr,
-		NoColor:     isNoColor,
+		NoColor:     isatty.IsCygwinTerminal(os.Stderr.Fd()) || isatty.IsTerminal(os.Stderr.Fd()),
 	})
 
 	logFile, err := os.OpenFile("linko.access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
