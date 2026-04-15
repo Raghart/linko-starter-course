@@ -13,6 +13,8 @@ import (
 
 	"boot.dev/linko/internal/build"
 	"boot.dev/linko/internal/store"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 )
 
 func main() {
@@ -28,9 +30,14 @@ func main() {
 }
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
-	debugHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+	isNoColor := true
+	if isatty.IsCygwinTerminal(os.Stderr.Fd()) || isatty.IsTerminal(os.Stderr.Fd()) {
+		isNoColor = false
+	}
+	debugHandler := tint.NewHandler(os.Stderr, &tint.Options{
 		Level:       slog.LevelDebug,
 		ReplaceAttr: replaceAttr,
+		NoColor:     isNoColor,
 	})
 
 	logFile, err := os.OpenFile("linko.access.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
