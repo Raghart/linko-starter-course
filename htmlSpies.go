@@ -48,7 +48,8 @@ func httpError(ctx context.Context, w http.ResponseWriter, status int, msg strin
 	if logCtx, ok := ctx.Value(logContextKey).(*LogContext); ok {
 		logCtx.Error = err
 	}
-	if status == 401 || status == 403 || status == 500 {
+	switch status {
+	case http.StatusUnauthorized, http.StatusForbidden, http.StatusInternalServerError:
 		msg = http.StatusText(status)
 	}
 
