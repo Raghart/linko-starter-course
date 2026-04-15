@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -40,9 +42,26 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 					errorAttrs(err)...))
 			}
 
+			if headerID := r.Header.Get("X-Request-ID"); strings.TrimSpace(headerID) != "" {
+				methodSlogSlice = append(methodSlogSlice, slog.String("request_id", headerID))
+			}
+
 			logger.Info("Served request",
 				methodSlogSlice...,
 			)
+		})
+	}
+}
+
+func requestHeader() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			headerID := r.Header.Get("X-Request-ID")
+			if strings.TrimSpace(headerID) == "" {
+				headerID = rand.Text()
+			}
+			w.Header().Set("X-Request-ID", headerID)
+			next.ServeHTTP(w, r)
 		})
 	}
 }
