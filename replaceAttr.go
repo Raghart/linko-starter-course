@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/url"
 	"slices"
-	"strings"
 
 	"boot.dev/linko/internal/linkoerr"
 	pkgerr "github.com/pkg/errors"
@@ -33,12 +32,13 @@ func replaceAttr(groups []string, a slog.Attr) slog.Attr {
 		"user",
 	}
 
-	if a.Key == "longURL" {
-		urlParsed, _ := url.Parse(a.Value.String())
-		completeURL := urlParsed.String()
-		pass, _ := urlParsed.User.Password()
-		parsedPass := strings.Replace(completeURL, pass, "[REDACTED]", -1)
-		return slog.String("long_url", parsedPass)
+	if a.Value.Kind() == slog.KindString {
+		if u, err := url.Parse(a.Value.String()); err == nil {
+			if _, hasPassword := u.User.Password(); hasPassword {
+				u.User = url.UserPassword(u.User.Username(), "[REDACTED]")
+				return slog.String(a.Key, u.String())
+			}
+		}
 	}
 
 	if slices.Contains(sensitiveKeys, a.Key) {
