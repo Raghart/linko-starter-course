@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
+	"slices"
+	"strings"
 
 	"boot.dev/linko/internal/linkoerr"
 	pkgerr "github.com/pkg/errors"
@@ -20,6 +23,28 @@ type multiError interface {
 }
 
 func replaceAttr(groups []string, a slog.Attr) slog.Attr {
+	var sensitiveKeys = []string{
+		"password",
+		"key",
+		"apiKey",
+		"secret",
+		"pin",
+		"creditcardno",
+		"user",
+	}
+
+	if a.Key == "longURL" {
+		urlParsed, _ := url.Parse(a.Value.String())
+		completeURL := urlParsed.String()
+		pass, _ := urlParsed.User.Password()
+		parsedPass := strings.Replace(completeURL, pass, "[REDACTED]", -1)
+		return slog.String("long_url", parsedPass)
+	}
+
+	if slices.Contains(sensitiveKeys, a.Key) {
+		return slog.String(a.Key, "[REDACTED]")
+	}
+
 	if a.Key == "error" {
 		err, ok := a.Value.Any().(error)
 		if !ok {
