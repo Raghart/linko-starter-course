@@ -25,15 +25,10 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 			spyWriter := &spyResponseWriter{ResponseWriter: w}
 			next.ServeHTTP(spyWriter, r)
 
-			parsedIp, err := redactIP(r.RemoteAddr)
-			if err != nil {
-				logger.Error("error while trying to parse the IP", "error", err)
-			}
-
 			methodSlogSlice := []any{
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
-				slog.String("client_ip", parsedIp),
+				slog.String("client_ip", redactIP(r.RemoteAddr)),
 				slog.Duration("duration", time.Since(start)),
 				slog.Int("request_body_bytes", spyReader.bytesRead),
 				slog.Int("response_status", spyWriter.statusCode),
@@ -73,18 +68,18 @@ func requestHeader() func(http.Handler) http.Handler {
 	}
 }
 
-func redactIP(adress string) (string, error) {
+func redactIP(adress string) string {
 	host, _, err := net.SplitHostPort(adress)
 	if err != nil {
-		return "", err
+		return adress
 	}
 
 	parsedIP := net.ParseIP(host)
 	if parsedIP.DefaultMask() == nil {
-		return host, nil
+		return host
 	}
 
 	ip4 := parsedIP.To4()
 
-	return fmt.Sprintf("%v.%v.%v.x", ip4[0], ip4[1], ip4[2]), nil
+	return fmt.Sprintf("%v.%v.%v.x", ip4[0], ip4[1], ip4[2])
 }
