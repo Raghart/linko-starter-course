@@ -25,7 +25,7 @@ func newServer(store store.Store, port int, cancel context.CancelFunc, serverLog
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: requestHeader()(requestLogger(serverLog)(mux)),
+		Handler: requestHeader()(metricsMiddleware(requestLogger(serverLog)(mux))),
 	}
 
 	s := &server{
