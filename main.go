@@ -30,6 +30,13 @@ func main() {
 }
 
 func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir string) int {
+	shutdown, err := initTracing(context.Background())
+	if err != nil {
+		fmt.Errorf("error while tracing the error: %w", err)
+	}
+
+	defer shutdown(context.Background())
+
 	debugHandler := tint.NewHandler(os.Stderr, &tint.Options{
 		Level:       slog.LevelDebug,
 		ReplaceAttr: replaceAttr,
