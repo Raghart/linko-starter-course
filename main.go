@@ -35,7 +35,11 @@ func run(ctx context.Context, cancel context.CancelFunc, httpPort int, dataDir s
 		fmt.Errorf("error while tracing the error: %w", err)
 	}
 
-	defer shutdown(context.Background())
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			fmt.Errorf("error while trying to shutdown the tracing service: %w", err)
+		}
+	}()
 
 	debugHandler := tint.NewHandler(os.Stderr, &tint.Options{
 		Level:       slog.LevelDebug,
