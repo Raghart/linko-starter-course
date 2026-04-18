@@ -26,6 +26,8 @@ var (
 var indexPage string
 
 func (s *server) handlerIndex(w http.ResponseWriter, r *http.Request) {
+	_, span := tracer.Start(r.Context(), "handler.index")
+	defer span.End()
 	w.Header().Set("Content-Type", "text/html")
 	io.WriteString(w, indexPage)
 }
@@ -78,6 +80,9 @@ func (s *server) handlerShortenLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlerRedirect(w http.ResponseWriter, r *http.Request) {
+	_, span := tracer.Start(r.Context(), "handler.redirect")
+	defer span.End()
+
 	longURL, err := s.store.Lookup(r.Context(), r.PathValue("shortCode"))
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -109,6 +114,9 @@ func (s *server) handlerRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlerListURLs(w http.ResponseWriter, r *http.Request) {
+	_, span := tracer.Start(r.Context(), "handler.listUrls")
+	defer span.End()
+
 	codes, err := s.store.List(r.Context())
 	if err != nil {
 		s.logger.Error(
@@ -131,7 +139,10 @@ func (s *server) handlerListURLs(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(codes)
 }
 
-func (s *server) handlerStats(w http.ResponseWriter, _ *http.Request) {
+func (s *server) handlerStats(w http.ResponseWriter, r *http.Request) {
+	_, span := tracer.Start(r.Context(), "handler.stats")
+	defer span.End()
+
 	redirectsMu.Lock()
 	snapshot := redirects
 	redirectsMu.Unlock()
